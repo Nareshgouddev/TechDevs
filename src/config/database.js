@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
-const { Connect } = require("vite");
 
 const ConnectDB = async () => {
   await mongoose.connect(
-    "mongodb+srv://ediganareshgoud406:<db_password>@cluster0.d3wyvjy.mongodb.net/Techdevs"
+    "mongodb+srv://ediganareshgoud406:NloPL3UBWA3JgPSm@cluster0.d3wyvjy.mongodb.net/Techdevs"
   );
 };
 
