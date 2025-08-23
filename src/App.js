@@ -48,7 +48,9 @@ app.post("/login", async (req, res) => {
     if (!PasswordMatch) {
       return res.status(401).send("Invalid email or password");
     }
-    const token = jwt.sign({ _id: user._id }, "TechDevs@034");
+    const token = jwt.sign({ _id: user._id }, "TechDevs@034", {
+      expiresIn: "7d",
+    });
 
     res.cookie("token", token);
     res.status(200).send("Login successful");
