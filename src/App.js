@@ -4,9 +4,13 @@ const User = require("./models/user");
 const { isValidate } = require("./utils/validator");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middleware/Auth");
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 app.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password, gender, age } = req.body;
   try {
@@ -44,9 +48,37 @@ app.post("/login", async (req, res) => {
     if (!PasswordMatch) {
       return res.status(401).send("Invalid email or password");
     }
+    const token = jwt.sign({ _id: user._id }, "TechDevs@034", {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token);
     res.status(200).send("Login successful");
   } catch (err) {
     res.status(404).send("Login failed: " + err);
+  }
+});
+
+app.post("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // const cookies = req.cookies;
+    // const { token } = cookies;
+    // if (!token) {
+    //   throw new Error("token Invalid");
+    // }
+    // const DecodeMessage = await jwt.verify(token, "TechDevs@034");
+
+    // const { _id } = DecodeMessage;
+
+    // const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("USer not Exist");
+    }
+    res.send(user);
+  } catch (err) {
+    res.send("ERROR" + err.message);
   }
 });
 
@@ -118,7 +150,7 @@ app.patch("/user/:userId", async (req, res) => {
     }
 
     if (update?.skills.length > 20) {
-      return res.status(400).send("Skills array cannot exceed 20 items.");
+      return res.status(400).send("Skills cannot exceed 20 items.");
     }
 
     const user = await User.findByIdAndUpdate(userId, update, {
