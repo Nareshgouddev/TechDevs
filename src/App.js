@@ -2,15 +2,29 @@ const express = require("express");
 const ConnectDB = require("./config/database");
 const User = require("./models/user");
 const { isValidate } = require("./utils/validator");
+const cookieParser = require("cookie-parser");
+const { userAuth } = require("./middleware/Auth");
+
+// Routers
+const requestRouter = require("./routers/request");
+const authRouter = require("./routers/auth");
+const profileRouter = require("./routers/profile");
+
+// Other imports
 const bcrypt = require("bcrypt");
 const validator = require("validator");
-const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-const { userAuth } = require("./middleware/Auth");
-const app = express();
 
-app.use(express.json());
+const app = express();
 app.use(cookieParser());
+app.use(express.json());
+
+// Use Routers
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
+
+// Signup route
 app.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password, gender, age } = req.body;
   try {
@@ -31,6 +45,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// Login route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -59,29 +74,20 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Profile
 app.post("/profile", userAuth, async (req, res) => {
   try {
     const user = req.user;
-
-    // const cookies = req.cookies;
-    // const { token } = cookies;
-    // if (!token) {
-    //   throw new Error("token Invalid");
-    // }
-    // const DecodeMessage = await jwt.verify(token, "TechDevs@034");
-
-    // const { _id } = DecodeMessage;
-
-    // const user = await User.findById(_id);
     if (!user) {
-      throw new Error("USer not Exist");
+      throw new Error("User not Exist");
     }
     res.send(user);
   } catch (err) {
-    res.send("ERROR" + err.message);
+    res.send("ERROR " + err.message);
   }
 });
 
+// Get user by email
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
   const user = await User.find({ email: userEmail });
@@ -92,9 +98,11 @@ app.get("/user", async (req, res) => {
       res.status(200).send(user);
     }
   } catch (err) {
-    res.status(404).send("Something Went Wrong" + err);
+    res.status(404).send("Something Went Wrong " + err);
   }
 });
+
+// Get all users
 app.get("/feed", (req, res) => {
   User.find({})
     .then((users) => {
@@ -105,6 +113,7 @@ app.get("/feed", (req, res) => {
     });
 });
 
+// Get user by ID
 app.get("/user/:id", async (req, res) => {
   const userId = req.params.id;
   try {
@@ -115,26 +124,27 @@ app.get("/user/:id", async (req, res) => {
   }
 });
 
+// Delete user
 app.delete("/user", async (req, res) => {
   const userId = req.body.id;
   try {
     if (userId) {
-      const user = await User.findByIdAndDelete(userId);
+      await User.findByIdAndDelete(userId);
     } else {
-      return res.status(400).send("User ID is not exist");
+      return res.status(400).send("User ID does not exist");
     }
-
-    res.status(200).send("user is Deleted Succesfully");
+    res.status(200).send("User is Deleted Successfully");
   } catch (err) {
     res.status(404).send("User Not found: " + err);
   }
 });
 
+// Update user
 app.patch("/user/:userId", async (req, res) => {
   const userId = req.params?.userId;
   const update = req.body;
   try {
-    const ALLOWED_UPADTES = [
+    const ALLOWED_UPDATES = [
       "skills",
       "about",
       "photoUrl",
@@ -142,18 +152,18 @@ app.patch("/user/:userId", async (req, res) => {
       "lastName",
     ];
     const isAllowedUpdates = Object.keys(update).every((k) =>
-      ALLOWED_UPADTES.includes(k)
+      ALLOWED_UPDATES.includes(k)
     );
 
     if (!isAllowedUpdates) {
       throw new Error("Invalid updates!");
     }
 
-    if (update?.skills.length > 20) {
+    if (update?.skills && update.skills.length > 20) {
       return res.status(400).send("Skills cannot exceed 20 items.");
     }
 
-    const user = await User.findByIdAndUpdate(userId, update, {
+    await User.findByIdAndUpdate(userId, update, {
       new: true,
       runValidators: true,
     });
@@ -163,11 +173,12 @@ app.patch("/user/:userId", async (req, res) => {
   }
 });
 
+// DB Connection
 ConnectDB()
   .then(() => {
     console.log("Database connected successfully");
     app.listen(3000, () => {
-      console.log("Server is Listening in port 3000....");
+      console.log("Server is Listening on port 3000....");
     });
   })
   .catch((err) => {
