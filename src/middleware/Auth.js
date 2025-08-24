@@ -8,7 +8,8 @@ const userAuth = async (req, res, next) => {
     if (!token) {
       throw new Error("Token is Invalid");
     }
-    const DecodeObj = await jwt.verify(token, "Techdevs@034");
+
+    const DecodeObj = await jwt.verify(token, "TechDevs@034"); //
     const { _id } = DecodeObj;
 
     const user = await User.findById(_id);
@@ -18,7 +19,7 @@ const userAuth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
-    res.send("ERROR" + err.message);
+    res.send("ERROR " + err.message);
   }
 };
 
