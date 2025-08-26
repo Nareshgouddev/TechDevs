@@ -12,6 +12,16 @@ const isValidate = (req) => {
   }
 };
 
+const validateProfileData = (req) => {
+  const ALLOWED_UPDATES = ["firstName", "lastName", "skills", "age"];
+
+  const isValidateprofile = Object.keys(req.body).every((field) => [
+    ALLOWED_UPDATES.includes(field),
+  ]);
+  return isValidateprofile;
+};
+
 module.exports = {
   isValidate,
+  validateProfileData,
 };
