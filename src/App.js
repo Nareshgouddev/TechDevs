@@ -14,7 +14,6 @@ const profileRouter = require("./routers/profile");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
-
 const app = express();
 app.use(cookieParser());
 app.use(express.json());

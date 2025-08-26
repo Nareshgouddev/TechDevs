@@ -3,7 +3,9 @@ const express = require("express");
 const profileRouter = express();
 
 const jwt = require("jsonwebtoken");
+
 const { validateProfileData } = require("../utils/validator");
+
 const { userAuth } = require("../middleware/Auth");
 
 profileRouter.post("/profile", userAuth, async (req, res) => {
@@ -24,6 +26,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
       throw new Error("invalid Edit");
     }
 
+
     const loggedInuser = req.user;
 
     console.log(loggedInuser);
@@ -36,7 +39,6 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     });
   } catch (err) {
     res.send("ERROR" + err.message);
-  }
 });
 
 module.exports = profileRouter;
