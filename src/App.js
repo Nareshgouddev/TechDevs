@@ -23,69 +23,6 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 
-// Signup route
-app.post("/signup", async (req, res) => {
-  const { firstName, lastName, email, password, gender, age } = req.body;
-  try {
-    isValidate(req);
-    const HashPassword = await bcrypt.hash(password, 10);
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: HashPassword,
-      gender,
-      age,
-    });
-    await user.save();
-    res.status(201).send("User created successfully");
-  } catch (err) {
-    res.status(404).send("User Not created: " + err);
-  }
-});
-
-// Login route
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    if (!email || !password) {
-      return res.status(400).send("Email and Password are required");
-    }
-    if (!validator.isEmail(email)) {
-      throw new Error("Email is not valid");
-    }
-    const user = await User.findOne({ email: email });
-    if (!user) {
-      return res.status(404).send("Invalid email or password");
-    }
-    const PasswordMatch = await bcrypt.compare(password, user.password);
-    if (!PasswordMatch) {
-      return res.status(401).send("Invalid email or password");
-    }
-    const token = jwt.sign({ _id: user._id }, "TechDevs@034", {
-      expiresIn: "7d",
-    });
-
-    res.cookie("token", token);
-    res.status(200).send("Login successful");
-  } catch (err) {
-    res.status(404).send("Login failed: " + err);
-  }
-});
-
-// Profile
-app.post("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    if (!user) {
-      throw new Error("User not Exist");
-    }
-    res.send(user);
-  } catch (err) {
-    res.send("ERROR " + err.message);
-  }
-});
-
 // Get user by email
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
@@ -139,38 +76,38 @@ app.delete("/user", async (req, res) => {
 });
 
 // Update user
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const update = req.body;
-  try {
-    const ALLOWED_UPDATES = [
-      "skills",
-      "about",
-      "photoUrl",
-      "firstName",
-      "lastName",
-    ];
-    const isAllowedUpdates = Object.keys(update).every((k) =>
-      ALLOWED_UPDATES.includes(k)
-    );
+// app.patch("/user/:userId", async (req, res) => {
+//   const userId = req.params?.userId;
+//   const update = req.body;
+//   try {
+//     const ALLOWED_UPDATES = [
+//       "skills",
+//       "about",
+//       "photoUrl",
+//       "firstName",
+//       "lastName",
+//     ];
+//     const isAllowedUpdates = Object.keys(update).every((k) =>
+//       ALLOWED_UPDATES.includes(k)
+//     );
 
-    if (!isAllowedUpdates) {
-      throw new Error("Invalid updates!");
-    }
+//     if (!isAllowedUpdates) {
+//       throw new Error("Invalid updates!");
+//     }
 
-    if (update?.skills && update.skills.length > 20) {
-      return res.status(400).send("Skills cannot exceed 20 items.");
-    }
+//     if (update?.skills && update.skills.length > 20) {
+//       return res.status(400).send("Skills cannot exceed 20 items.");
+//     }
 
-    await User.findByIdAndUpdate(userId, update, {
-      new: true,
-      runValidators: true,
-    });
-    res.send("User updated successfully");
-  } catch (err) {
-    res.status(404).send("User Not updated: " + err);
-  }
-});
+//     await User.findByIdAndUpdate(userId, update, {
+//       new: true,
+//       runValidators: true,
+//     });
+//     res.send("User updated successfully");
+//   } catch (err) {
+//     res.status(404).send("User Not updated: " + err);
+//   }
+// });
 
 // DB Connection
 ConnectDB()
