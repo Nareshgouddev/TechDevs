@@ -1,26 +1,27 @@
 const mongoose = require("mongoose");
 
-const connectionRequest = mongoose.Schema({
+const connectionRequestSchema = new mongoose.Schema({
   fromuserId: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // optional, but useful for population
     required: true,
   },
-  touserId: {
+  toUserId: {
     type: mongoose.Schema.Types.ObjectId,
-    require: true,
+    ref: "User",
+    required: true,
   },
   status: {
     type: String,
-    enum: {
-      value: ["ignore", "intrested", "accepted", "rejected"],
-      required: true,
-    },
+    enum: ["ignore", "interested", "accepted", "rejected"],
+    default: "ignore",
+    required: true,
   },
 });
 
-const connectionRequestModel = mongoose.model(
-  "connectionRequest",
-  connectionRequest
+const ConnectionRequest = mongoose.model(
+  "ConnectionRequest",
+  connectionRequestSchema
 );
 
-module.exports = connectionRequest;
+module.exports = ConnectionRequest; // ✅ export the model
