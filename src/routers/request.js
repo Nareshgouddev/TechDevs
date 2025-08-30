@@ -9,11 +9,11 @@ requestRouter.post(
   userAuth,
   async (req, res) => {
     try {
-      const fromuserId = req.user._id; // ✅ mongoose uses _id (not _Id)
+      const fromuserId = req.user._id;
       const toUserId = req.params.toUserId;
       const status = req.params.status;
 
-      const allowedStatus = ["ignore", "interested"]; // ✅ fix typo: "ingored"
+      const allowedStatus = ["ignore", "interested"];
       if (!allowedStatus.includes(status)) {
         return res
           .status(400)
@@ -45,13 +45,49 @@ requestRouter.post(
         status,
       });
 
-      const data = await newRequest.save(); // ✅ save the instance
+      const data = await newRequest.save();
       res.json({
-        message: "Connection Request Sent Successfully",
+        message: req.user.firstName + "is" + status + "in" + toUser.firstName,
         data,
       });
     } catch (err) {
       res.status(500).send("ERROR: " + err.message);
+    }
+  }
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInuser = req.user;
+      const { status, requestId } = req.params;
+      if (!loggedInuser) {
+        res.status(400).json({ message: "please Login" });
+      }
+
+      const allowedstatus = ["accepted", "rejected"];
+      if (!allowedstatus.includes(status)) {
+        return res.status(400).json({ message: "Status not allowed" });
+      }
+      const connectionRequestrev = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInuser._id,
+        status: "interested",
+      });
+      if (!connectionRequestrev) {
+        return res
+          .status(400)
+          .json({ message: "Connection Request not found" });
+      }
+
+      connectionRequestrev.status = status;
+
+      const data = await connectionRequestrev.save();
+      res.status(200).json({ message: "Connection request Accepted", data });
+    } catch (err) {
+      res.send("ERROR" + err.message);
     }
   }
 );

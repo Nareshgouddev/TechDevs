@@ -14,6 +14,7 @@ const profileRouter = require("./routers/profile");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
+const userRouter = require("./routers/user");
 const app = express();
 app.use(cookieParser());
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 // Get user by email
 app.get("/user", async (req, res) => {
