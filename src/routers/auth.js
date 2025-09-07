@@ -52,10 +52,6 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.post("/logout", async (req, res) => {
-  //   const { email, password } = req.body;
-  //   const user = await User.findOne({ email: email });
-  //   const token = await user.getJWT();
-
   res.clearCookie("token");
   res.status(200).send("Logout successful");
 });
