@@ -39,12 +39,10 @@ const userSchema = new mongoose.Schema(
     },
     age: {
       type: Number,
-      required: true,
       min: 15,
     },
     gender: {
       type: String,
-      required: [true, "gender is required"],
       trim: true,
       validate: {
         validator: function (val) {

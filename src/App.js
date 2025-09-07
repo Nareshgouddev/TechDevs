@@ -4,6 +4,7 @@ const User = require("./models/user");
 const { isValidate } = require("./utils/validator");
 const cookieParser = require("cookie-parser");
 const { userAuth } = require("./middleware/Auth");
+const cors = require("cors");
 
 // Routers
 const requestRouter = require("./routers/request");
@@ -16,6 +17,13 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const userRouter = require("./routers/user");
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173/",
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 
